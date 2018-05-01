@@ -13,4 +13,5 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.1.7'
 }
 
+targetCompatibility = '1.7'
 mainClassName = "Main"
