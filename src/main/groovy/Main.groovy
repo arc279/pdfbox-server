@@ -25,27 +25,21 @@ if (options.h) {
     return
 }
 
-def logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
 
-if (options.p) {
-    PORT = options.p as int
-}
-logger.info "start port: {}", PORT
-
-def pdf2text(buf) {
-    def doc = PDDocument.load(buf)
-    try {
-        def stripper = new PDFTextStripper()
-        return stripper.getText(doc)
-    } finally {
-        doc.close()
+class PdfBoxHttpHandler implements HttpHandler {
+    public static String pdf2text(ifs) throws IOException {
+        def doc = PDDocument.load(ifs)
+        try {
+            def stripper = new PDFTextStripper()
+            return stripper.getText(doc)
+        } finally {
+            doc.close()
+        }
     }
-}
 
-HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
-server.createContext("/", new HttpHandler() {
     @Override
     public void handle(HttpExchange he) throws IOException {
+        def logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
         try {
             def ifs = he.getRequestBody()
             def outText = pdf2text(ifs)
@@ -56,15 +50,29 @@ server.createContext("/", new HttpHandler() {
             he.sendResponseHeaders(200, bs.length)
             he.getResponseBody().write(bs)
         } catch(IOException e) {
-            // NOTE: PDDocument で IOException になっても何故かここに入ってこない問題
-            logger.error e
+            def outText = e.toString()
+            def bs = outText.getBytes("UTF-8");
+            logger.error "{}", outText
+
             he.getResponseHeaders().add("Content-Type", "text/plain; charset=utf-8")
-            he.sendResponseHeaders(500, bs.length)
-            he.getResponseBody().write(e)
+            he.sendResponseHeaders(400, bs.length)
+            he.getResponseBody().write(bs)
         } finally {
             he.close()
         }
     }
-})
+}
+
+//-------
+// main
+def logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)
+
+if (options.p) {
+    PORT = options.p as int
+}
+logger.info "start port: {}", PORT
+
+HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
+server.createContext("/", new PdfBoxHttpHandler())
 server.start()
 
