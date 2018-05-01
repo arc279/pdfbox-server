@@ -1,0 +1,16 @@
+apply plugin: 'groovy'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.4.12'
+    compile 'org.apache.pdfbox:pdfbox:2.0.8'
+    compile 'commons-cli:commons-cli:1.4'
+    compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'ch.qos.logback:logback-classic:1.1.7'
+}
+
+mainClassName = "Main"
