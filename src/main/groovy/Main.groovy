@@ -3,6 +3,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import com.sun.net.httpserver.HttpServer;
+import java.util.concurrent.Executors;
 
 def PORT = 6001
 
@@ -30,5 +31,6 @@ logger.info "start port: {}", PORT
 HttpServer server = HttpServer.create(new InetSocketAddress(PORT), 0);
 server.createContext("/ping", new PingHttpHandler())
 server.createContext("/", new PdfBoxHttpHandler())
+server.setExecutor(Executors.newCachedThreadPool())
 server.start()
 
